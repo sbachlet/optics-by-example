@@ -7,13 +7,16 @@
 {-# LANGUAGE  TypeFamilies #-}
 
 module Lib
-    ( someFunc
-    , Pet(..)
-    , petName
-    , petType
-    , Err(..)
-    , msg
-    ) where
+  ( someFunc
+  , Pet(..)
+  , petName
+  , petType
+  , Err(..)
+  , msg
+  , Ship(..)
+  , name
+  , numCrew
+  ) where
 
 import Control.Lens
 import Control.Applicative ()
@@ -29,9 +32,9 @@ data Ship = Ship
   {
     _name    :: String
   , _numCrew :: Int
-  } deriving (Show)
+  } deriving (Show, Eq)
 
-makeLenses ''Ship
+-- makeLenses ''Ship
 
 purplePearl :: Ship
 purplePearl = Ship
@@ -74,8 +77,25 @@ data Err =
 
 msg :: Lens' Err String
 msg = lens getMsg setMsg 
-    where
-        getMsg (ReallyBadError message) = message 
-        getMsg (ExitCode _) = ""
-        setMsg (ReallyBadError _) newMessage = ReallyBadError newMessage
-        setMsg (ExitCode n) newMessage = ExitCode n
+  where
+    getMsg (ReallyBadError message) = message 
+    getMsg (ExitCode _) = ""
+    setMsg (ReallyBadError _) newMessage = ReallyBadError newMessage
+    setMsg (ExitCode n) newMessage = ExitCode n
+
+-- Exercises - Laws 
+-- 1.
+name :: Lens' Ship String 
+name = lens getter setter 
+  where 
+    getter (Ship name _) = name 
+    setter _ name = Ship name 10
+
+numCrew :: Lens' Ship Int 
+numCrew = lens getter setter 
+  where
+    getter (Ship _ numCrew) = numCrew
+    setter (Ship name oldNumCrew) numCrew = 
+      if oldNumCrew `mod` 2 == 0
+      then Ship name (oldNumCrew `div` 2)
+      else Ship name numCrew
