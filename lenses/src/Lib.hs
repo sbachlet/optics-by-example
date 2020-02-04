@@ -74,6 +74,7 @@ conditional = lens get set
 data Err =
     ReallyBadError { _msg :: String }
   | ExitCode       { _code :: Int }
+  deriving (Eq, Show)
 
 msg :: Lens' Err String
 msg = lens getMsg setMsg 

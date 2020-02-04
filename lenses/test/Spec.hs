@@ -73,6 +73,7 @@ main = hspec $ do
     setGetUnlawfull "msg" msg newMessage testErr1
 
   describe "Exercises - Laws" $ do 
+    -- 1
     setGetLawfull "name" name "testing" testShip 
     getSetUnlawfull "name" name testShip 
     setSetLawfull "name" name "testing" "testing 2" testShip
@@ -80,3 +81,11 @@ main = hspec $ do
     setGetLawfull "numCrew" numCrew 0 testShip 
     getSetLawfull "numCrew" numCrew testShip 
     setSetUnlawfull "numCrew" numCrew 0 2 testShip
+
+    -- 2
+    getSetLawfull "msg" msg $ ReallyBadError "test"
+    getSetLawfull "msg" msg $ ExitCode 0
+    setSetLawfull "msg" msg "test0" "test1" $ ReallyBadError "test"
+    setSetLawfull "msg" msg "test0" "test1" $ ExitCode 0
+
+    -- 3
