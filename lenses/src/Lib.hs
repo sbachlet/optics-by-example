@@ -1,10 +1,11 @@
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE  FlexibleContexts #-}
-{-# LANGUAGE  RankNTypes #-}
-{-# LANGUAGE  ScopedTypeVariables #-}
-{-# LANGUAGE  TypeApplications #-}
-{-# LANGUAGE  TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE FlexibleInstances   #-}
+{-# LANGUAGE RankNTypes          #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell     #-}
+{-# LANGUAGE TypeApplications    #-}
+{-# LANGUAGE TypeFamilies        #-}
+{-# LANGUAGE RecordWildCards     #-}
 
 module Lib
   ( someFunc
@@ -13,26 +14,29 @@ module Lib
   , petType
   , Err(..)
   , msg
+  , msg'
   , Ship(..)
   , name
   , numCrew
+  , AllThree(..)
+  , switch
   ) where
 
-import Control.Lens
-import Control.Applicative ()
-import Data.Char
-import qualified Data.Map as M
-import qualified Data.Set as S
-import qualified Data.Text as T
+import           Control.Applicative ()
+import           Control.Lens
+import           Data.Char
+import qualified Data.Map            as M
+import qualified Data.Set            as S
+import qualified Data.Text           as T
 
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
 
 data Ship = Ship
-  {
-    _name    :: String
-  , _numCrew :: Int
-  } deriving (Show, Eq)
+    { _name    :: String
+    , _numCrew :: Int
+    }
+    deriving (Show, Eq)
 
 -- makeLenses ''Ship
 
@@ -44,16 +48,16 @@ purplePearl = Ship
   }
 
 data Pet = Pet
-  {
-    _petName :: String
-  , _petType :: String
-  } deriving (Show, Eq)
+    { _petName :: String
+    , _petType :: String
+    }
+    deriving (Show, Eq)
 
 makeLenses ''Pet
 
 second :: Lens' (a, b, c) b
 second = lens get set
-  where 
+  where
     get :: (a, b, c) -> b
     get (_, b, _) = b
 
@@ -66,37 +70,70 @@ conditional = lens get set
     get :: (Bool, a, a) -> a
     get (True, x, _)  = x
     get (False, _, x) = x
-    
+
     set :: (Bool, a, a) -> a -> (Bool, a, a)
-    set (True, _, y) z = (True, z, y)
+    set (True, _, y) z  = (True, z, y)
     set (False, x, _) z = (False, x, z)
 
-data Err =
-    ReallyBadError { _msg :: String }
-  | ExitCode       { _code :: Int }
-  deriving (Eq, Show)
+data Err = ReallyBadError
+    { _msg :: String
+    }
+    | ExitCode
+    { _code :: Int
+    }
+    deriving (Eq, Show)
 
 msg :: Lens' Err String
-msg = lens getMsg setMsg 
+msg = lens getMsg setMsg
   where
-    getMsg (ReallyBadError message) = message 
-    getMsg (ExitCode _) = ""
+    getMsg (ReallyBadError message) = message
+    getMsg (ExitCode _)             = ""
     setMsg (ReallyBadError _) newMessage = ReallyBadError newMessage
-    setMsg (ExitCode n) newMessage = ExitCode n
+    setMsg (ExitCode n) newMessage       = ExitCode n
 
--- Exercises - Laws 
+-- Exercises - Laws
 -- 1.
-name :: Lens' Ship String 
-name = lens getter setter 
-  where 
-    getter (Ship name _) = name 
+name :: Lens' Ship String
+name = lens getter setter
+  where
+    getter (Ship name _) = name
     setter _ name = Ship name 10
 
-numCrew :: Lens' Ship Int 
-numCrew = lens getter setter 
+numCrew :: Lens' Ship Int
+numCrew = lens getter setter
   where
-    getter (Ship _ numCrew) = numCrew
-    setter (Ship name oldNumCrew) numCrew = 
+    getter (Ship _ crew) = crew
+    setter (Ship name oldNumCrew) numCrew =
       if oldNumCrew `mod` 2 == 0
       then Ship name (oldNumCrew `div` 2)
       else Ship name numCrew
+
+-- 3.
+msg' :: Lens' Err String
+msg' = lens getMsg setMsg
+    where
+      getMsg (ReallyBadError message) = message
+      getMsg (ExitCode _) = "" 
+      setMsg _ newMsg = ReallyBadError newMsg
+-- 4
+data CouldBe =
+    Definitley String
+  | NoWay
+maybeLens :: Lens' CouldBe String 
+maybeLens = lens get set
+  where
+    get (Definitley x) = x
+    get NoWay = ""
+    set _ x = Definitley x
+
+-- 5
+data AllThree = AllThree
+  { _one :: String
+  , _two :: String
+  } deriving (Eq, Show)
+
+switch :: Lens' AllThree String
+switch = lens get set
+  where
+    get AllThree{..} = _two
+    set AllThree{..} _ = AllThree _two _one
