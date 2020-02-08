@@ -99,4 +99,9 @@ main = hspec $ do
     setGetUnlawfull "switch" switch "test" $ AllThree "one" "two"
     getSetUnlawfull "switch" switch $ AllThree "one" "two"
     setSetUnlawfull "switch" switch "test0" "test1" $ AllThree "one" "two"
+
+    setGetLawfull "context" Lib.context "test" $ Builder ["test0"] concat
+    -- getSetLawfull "context" Lib.context $ Builder ["test"] concat
+    -- setSetLawfull "context" Lib.context "test0" "test1" $ Builder ["test"] concat
+    
     

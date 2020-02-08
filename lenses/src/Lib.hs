@@ -20,6 +20,8 @@ module Lib
   , numCrew
   , AllThree(..)
   , switch
+  , Builder(..)
+  , context
   ) where
 
 import           Control.Applicative ()
@@ -137,3 +139,20 @@ switch = lens get set
   where
     get AllThree{..} = _two
     set AllThree{..} _ = AllThree _two _one
+
+-- 6
+data Builder =
+  Builder { _context :: [String]
+          , _build   :: [String] -> String
+          }
+
+context :: Lens' Builder String
+context = lens get set
+  where
+    get (Builder c  b) = b c
+    set (Builder c b) newContext = 
+      Builder [newContext] $ \c' ->
+        if c' == c
+        then newContext
+        else b c'
+-- End Exercises - Laws
